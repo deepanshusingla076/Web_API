@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repos Fetcher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .container button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .container button:hover {
+            background-color: #2980b9;
+        }
+
+        .repo-list {
+            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .repo-list li {
+            background-color: #ecf0f1;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .repo-list li:hover {
+            background-color: #bdc3c7;
+        }
+
+        .repo-list li a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>GitHub Repo Fetcher</h2>
+        <form id="githubForm">
+            <input type="text" id="username" placeholder="Enter GitHub username..." required />
+            <button type="submit">Fetch Repos</button>
+        </form>
+        <ul class="repo-list" id="repoList"></ul>
+        <p class="error-message" id="errorMessage"></p>
+    </div>
+
+    <script>
+        document.getElementById('githubForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            if (username) {
+                fetchRepos(username);
+            } else {
+                alert("Please enter a GitHub username.");
+            }
+        });
+
+        function fetchRepos(username) {
+            const repoList = document.getElementById('repoList');
+            const errorMessage = document.getElementById('errorMessage');
+            repoList.innerHTML = '';
+            errorMessage.textContent = '';
+
+            const url = `https://api.github.com/users/${username}/repos`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('User not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.length === 0) {
+                        repoList.innerHTML = '<li>No repositories found for this user.</li>';
+                        return;
+                    }
+
+                    data.forEach(repo => {
+                        const li = document.createElement('li');
+                        const repoLink = document.createElement('a');
+                        repoLink.textContent = repo.name;
+                        repoLink.href = repo.html_url;
+                        repoLink.target = '_blank';
+                        li.appendChild(repoLink);
+                        repoList.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    errorMessage.textContent = 'Error fetching repositories: ' + error.message;
+                    console.error(error);
+                });
+        }
+    </script>
+</body>
+</html>
